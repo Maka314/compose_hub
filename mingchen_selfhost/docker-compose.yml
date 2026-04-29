@@ -1,8 +1,13 @@
+name: mingchen-selfhost
+
 services:
   portfolio:
     image: maka314/portfolio:latest
-  
+    restart: unless-stopped
+
   tunnel:
     image: cloudflare/cloudflared:latest
     command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
-    restart: always
+    restart: unless-stopped
+    depends_on:
+      - portfolio
