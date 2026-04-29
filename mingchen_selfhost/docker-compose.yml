@@ -1,0 +1,9 @@
+services:
+  portfolio:
+    image: maka314/portfolio:latest
+  
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: euler_cloudflare_tunnel
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
+    restart: always
