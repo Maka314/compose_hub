@@ -248,9 +248,40 @@ services:
       retries: 5
       start_period: 5s
 
+  # ===========================================================================
+  # MoonBridge
+  # ===========================================================================
+  moonbridge:
+    image: maka314/moonbridge:latest
+    container_name: moonbridge
+    restart: unless-stopped
+    command:
+      - -config
+      - /config/config.yml
+      - -addr
+      - 0.0.0.0:38440
+    volumes:
+      - config:/config
+    healthcheck:
+      test:
+        - CMD
+        - /app/moonbridge
+        - -config
+        - /config/config.yml
+        - -addr
+        - 0.0.0.0:38440
+        - -print-addr
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
 # =============================================================================
 # Networks
 # =============================================================================
 networks:
   sub2api-network:
     driver: bridge
+
+volumes:
+  config:
