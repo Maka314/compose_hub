@@ -255,11 +255,12 @@ services:
   config-editor:
     image: ubuntu:latest
     container_name: config-editor
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
     volumes:
       - config:/config
     command: ["sleep", "infinity"]
-    profiles:
-      - tools
 
   # ===========================================================================
   # MoonBridge
