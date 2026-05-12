@@ -249,6 +249,19 @@ services:
       start_period: 5s
 
   # ===========================================================================
+  # Config Editor (Ubuntu) - for editing files in the config volume
+  # Usage: docker compose run --rm config-editor bash
+  # ===========================================================================
+  config-editor:
+    image: ubuntu:latest
+    container_name: config-editor
+    volumes:
+      - config:/config
+    command: ["sleep", "infinity"]
+    profiles:
+      - tools
+
+  # ===========================================================================
   # MoonBridge
   # ===========================================================================
   moonbridge:
@@ -261,7 +274,7 @@ services:
       - -addr
       - 0.0.0.0:38440
     volumes:
-      - config:/config
+      - config:/config:ro
     networks:
       - sub2api-network
     healthcheck:
