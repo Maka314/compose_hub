@@ -11,6 +11,3 @@ services:
     restart: unless-stopped
     depends_on:
       - portfolio
-
-volumes:
-  node-red-data:
