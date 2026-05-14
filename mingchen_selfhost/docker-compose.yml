@@ -10,7 +10,7 @@ services:
     image: mysql:5.7
     volumes:
       - db_data:/var/lib/mysql
-    restart: always
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_DATABASE_PASSWORD}
       MYSQL_DATABASE: wordpress
@@ -19,13 +19,14 @@ services:
 
   wordpress:
     image: wordpress:latest
-    ports:
-      - 80
-    restart: always
+    # ports:
+    #   - 80
+    restart: unless-stopped
     environment:
       WORDPRESS_DB_HOST: wordpress-db:3306
       WORDPRESS_DB_USER: wordpress
       WORDPRESS_DB_PASSWORD: wordpress
+      MYSQL_ROOT_PASSWORD: mysqlrootpassword
 
 
 volumes:
