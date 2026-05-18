@@ -11,7 +11,7 @@ services:
     pull_policy: daily
     environment:
       EULA: "TRUE"
-      ONLINE_MODE: "FALSE"
+      ONLINE_MODE: "false"
     ports:
       - "19132/udp"
       - "19133/udp"
