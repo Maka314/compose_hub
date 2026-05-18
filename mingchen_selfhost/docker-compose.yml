@@ -6,19 +6,20 @@ services:
     command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
     restart: unless-stopped
 
-  mc:
-    image: itzg/minecraft-server:latest
+services:
+  bds:
+    image: itzg/minecraft-bedrock-server:latest
     pull_policy: daily
-    tty: true
-    stdin_open: true
-    ports:
-      - "25565"
     environment:
       EULA: "TRUE"
       ONLINE_MODE: "FALSE"
+    ports:
+      - "19132/udp"
+      - "19133/udp"
     volumes:
-      # attach the relative directory 'data' to the container's /data path
       - mc_data:/data
+    stdin_open: true
+    tty: true
 
   wordpress-db:
     image: mysql:5.7
