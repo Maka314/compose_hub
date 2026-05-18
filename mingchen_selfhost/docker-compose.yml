@@ -14,7 +14,6 @@ services:
       ONLINE_MODE: "false"
     ports:
       - "19132/udp"
-      - "19133/udp"
     volumes:
       - mc_data:/data
     stdin_open: true
