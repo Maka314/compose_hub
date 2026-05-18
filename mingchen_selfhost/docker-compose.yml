@@ -6,7 +6,6 @@ services:
     command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
     restart: unless-stopped
 
-services:
   bds:
     image: itzg/minecraft-bedrock-server:latest
     pull_policy: daily
