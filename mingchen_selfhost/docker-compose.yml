@@ -6,19 +6,6 @@ services:
     command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
     restart: unless-stopped
 
-  bds:
-    image: itzg/minecraft-bedrock-server:latest
-    pull_policy: daily
-    environment:
-      EULA: "TRUE"
-      ONLINE_MODE: "false"
-    ports:
-      - "19132/udp"
-    volumes:
-      - mc_data:/data
-    stdin_open: true
-    tty: true
-
   wordpress-db:
     image: mysql:5.7
     volumes:
@@ -43,4 +30,3 @@ services:
 
 volumes:
   db_data:
-  mc_data:
