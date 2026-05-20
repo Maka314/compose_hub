@@ -9,8 +9,8 @@ services:
   calibre-web:
     image: lscr.io/linuxserver/calibre-web:latest
     volumes:
-      - calibre-data:/config
-      - calibre-library:/books
+      - calibre_data:/config
+      - calibre_library:/books
     # ports:
     #   - 8083
     restart: unless-stopped
@@ -39,5 +39,5 @@ services:
 
 volumes:
   db_data:
-  calibre-data:
-  calibre-library:
+  calibre_data:
+  calibre_library:
