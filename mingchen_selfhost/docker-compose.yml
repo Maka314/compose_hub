@@ -6,6 +6,22 @@ services:
     command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
     restart: unless-stopped
 
+  calibre-web:
+    image: lscr.io/linuxserver/calibre-web:latest
+    container_name: calibre-web
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - DOCKER_MODS=linuxserver/mods:universal-calibre #optional
+      - OAUTHLIB_RELAX_TOKEN_SCOPE=1 #optional
+    volumes:
+      - calibre-data:/config
+      - calibre-library:/books
+    ports:
+      - 8083
+    restart: unless-stopped
+
   wordpress-db:
     image: mysql:5.7
     volumes:
@@ -30,3 +46,5 @@ services:
 
 volumes:
   db_data:
+  calibre-data:
+  calibre-library:
