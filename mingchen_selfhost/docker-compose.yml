@@ -6,37 +6,6 @@ services:
     command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
     restart: unless-stopped
 
-  calibre:
-    image: lscr.io/linuxserver/calibre:latest
-    security_opt:
-      - seccomp=unconfined
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Etc/UTC
-    ports:
-      - 8080
-      - 8181
-      - 8081
-    volumes:
-      - calibre_data:/config
-      - calibre_library:/books
-    shm_size: 1gb
-    restart: unless-stopped
-
-  calibre-web:
-    image: lscr.io/linuxserver/calibre-web:latest
-    volumes:
-      - calibre_data:/config
-      - calibre_library:/books
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Etc/UTC
-    # ports:
-    #   - 8083
-    restart: unless-stopped
-
   wordpress-db:
     image: mysql:5.7
     volumes:
@@ -61,6 +30,3 @@ services:
 
 volumes:
   db_data:
-  calibre_config:
-  calibre_data:
-  calibre_library:
