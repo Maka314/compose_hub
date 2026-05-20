@@ -6,6 +6,23 @@ services:
     command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
     restart: unless-stopped
 
+  calibre:
+    image: lscr.io/linuxserver/calibre:latest
+    security_opt:
+      - seccomp=unconfined
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    ports:
+      - 8080
+      - 8181
+      - 8081
+    volumes:
+      - calibre_config:/config
+    shm_size: 1gb
+    restart: unless-stopped
+
   calibre-web:
     image: lscr.io/linuxserver/calibre-web:latest
     volumes:
@@ -39,5 +56,6 @@ services:
 
 volumes:
   db_data:
+  calibre_config:
   calibre_data:
   calibre_library:
