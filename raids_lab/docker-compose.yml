@@ -7,15 +7,16 @@ services:
     restart: unless-stopped
 
   nextcloud:
-    image: nextcloud/aio-nextcloud:latest
-    restart: unless-stopped
+    image: nextcloud/all-in-one:latest
+    container_name: nextcloud-aio-mastercontainer
+    restart: always
     ports:
-      - 80
-      - 8080
-      - 8443
+      - "80:80"
+      - "8080:8080"
+      - "8443:8443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - nextcloud_data:/var/lib/docker/volumes
+      - nextcloud_aio_mastercontainer:/mnt/docker-aio-config
 
 volumes:
-  nextcloud_data:
+  nextcloud_aio_mastercontainer:
