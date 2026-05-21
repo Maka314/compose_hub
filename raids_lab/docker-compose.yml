@@ -5,18 +5,22 @@ services:
     image: cloudflare/cloudflared:latest
     command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
     restart: unless-stopped
+    depends_on:
+      - nextcloud
 
   nextcloud:
     image: nextcloud/all-in-one:latest
     container_name: nextcloud-aio-mastercontainer
     restart: always
     ports:
-      - "80:80"
       - "8080:8080"
-      - "8443:8443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - nextcloud_aio_mastercontainer:/mnt/docker-aio-config
+    environment:
+      - APACHE_PORT=1100
+      - APACHE_IP_BINDING=0.0.0.0
+      - SKIP_DOMAIN_VALIDATION=true
 
 volumes:
   nextcloud_aio_mastercontainer:
