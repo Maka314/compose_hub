@@ -16,7 +16,15 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
-    # volumes:
-    #   - ./models:/build/models:cached
+    volumes:
+      - local_ai_data:/data
     #   - ./images:/build/images:cached
     #   - ./config:/build/config:cached
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
+    restart: unless-stopped
+
+volumes:
+  local_ai_data:
