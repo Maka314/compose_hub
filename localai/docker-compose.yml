@@ -6,7 +6,7 @@ services:
     tty: true
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - 8080
     # volumes:
     #   - ./models:/build/models:cached
     #   - ./images:/build/images:cached
