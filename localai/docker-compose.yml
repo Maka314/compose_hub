@@ -1,26 +1,4 @@
 services:
-  local-ai:
-    image: localai/localai:master-gpu-nvidia-cuda-13
-    container_name: local-ai
-    stdin_open: true
-    tty: true
-    restart: unless-stopped
-    ports:
-      - 8080
-    environment:
-      - LOCALAI_AUTH=true
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-    volumes:
-      - local_ai_data:/data
-    #   - ./images:/build/images:cached
-    #   - ./config:/build/config:cached
-
   tunnel:
     image: cloudflare/cloudflared:latest
     command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
