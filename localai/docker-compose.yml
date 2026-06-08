@@ -44,7 +44,7 @@ services:
             - driver: nvidia
               count: all
               capabilities: [gpu]
-    command: --model Qwen/Qwen3-0.6B
+    command: --model Qwen/Qwen3-0.6B --api-key ${VLLM_API_KEY}
 
 volumes:
   local_ai_data:

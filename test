@@ -1,0 +1,3 @@
+curl http://100.127.106.30:32777/v1/chat/completions \
+-H "Content-Type: application/json" \
+-d '{"model":"Qwen/Qwen3-0.6B","messages":[{"role":"user","content":"Hello"}]}'
