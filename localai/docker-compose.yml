@@ -1,0 +1,13 @@
+services:
+  local-ai:
+    image: localai/localai:latest
+    container_name: local-ai
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    # volumes:
+    #   - ./models:/build/models:cached
+    #   - ./images:/build/images:cached
+    #   - ./config:/build/config:cached
