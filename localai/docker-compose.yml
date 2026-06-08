@@ -26,5 +26,25 @@ services:
     command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
     restart: unless-stopped
 
+  vllm:
+    image: vllm/vllm-openai:latest
+    container_name: vllm
+    restart: unless-stopped
+    ipc: host
+    ports:
+      - 8000
+    # volumes:
+    #   - ~/.cache/huggingface:/root/.cache/huggingface
+    # environment:
+    #   - HF_TOKEN=${HF_TOKEN}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command: --model Qwen/Qwen3-0.6B
+
 volumes:
   local_ai_data:
