@@ -12,6 +12,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       - SKIP_DOMAIN_VALIDATION=true
+      - APACHE_PORT=11000
+      - APACHE_IP_BINDING=0.0.0.0
+      - APACHE_ADDITIONAL_NETWORK=
     stop_grace_period: 30s
 
   tunnel:
