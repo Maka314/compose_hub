@@ -43,10 +43,26 @@ services:
     restart: always
     volumes:
       - firefly_iii_upload:/var/www/html/storage/upload
-    env_file:
-      - .env
     environment:
-      DB_HOST: firefly-db
+      APP_ENV: ${APP_ENV:-production}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      SITE_OWNER: ${SITE_OWNER:-mail@example.com}
+      APP_KEY: ${APP_KEY}
+      DEFAULT_LANGUAGE: ${DEFAULT_LANGUAGE:-en_US}
+      DEFAULT_LOCALE: ${DEFAULT_LOCALE:-equal}
+      TZ: ${TZ:-UTC}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
+      LOG_CHANNEL: ${LOG_CHANNEL:-stack}
+      APP_LOG_LEVEL: ${APP_LOG_LEVEL:-notice}
+      AUDIT_LOG_LEVEL: ${AUDIT_LOG_LEVEL:-emergency}
+      DB_CONNECTION: ${DB_CONNECTION:-mysql}
+      DB_HOST: ${DB_HOST:-firefly-db}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_DATABASE: ${DB_DATABASE:-firefly}
+      DB_USERNAME: ${DB_USERNAME:-firefly}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      STATIC_CRON_TOKEN: ${STATIC_CRON_TOKEN}
+      APP_URL: ${APP_URL:-http://localhost}
     networks:
       - tunnel-shared
       - firefly-backend
@@ -58,8 +74,11 @@ services:
     hostname: firefly-db
     container_name: firefly_iii_db
     restart: always
-    env_file:
-      - .db.env
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: ${MYSQL_RANDOM_ROOT_PASSWORD:-yes}
+      MYSQL_USER: ${MYSQL_USER:-firefly}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-firefly}
     networks:
       - firefly-backend
     volumes:
@@ -69,8 +88,9 @@ services:
     image: alpine
     restart: always
     container_name: firefly_iii_cron
-    env_file:
-      - .env
+    environment:
+      TZ: ${TZ:-UTC}
+      STATIC_CRON_TOKEN: ${STATIC_CRON_TOKEN}
     command:
       - sh
       - -c
