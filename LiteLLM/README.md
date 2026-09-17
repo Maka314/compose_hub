@@ -1,71 +1,106 @@
 # LiteLLM Docker Compose
 
-使用 Docker Compose 部署 [LiteLLM](https://github.com/BerriAI/litellm) 代理服务，包含 PostgreSQL 数据库和 Cloudflare Tunnel。
+使用 Docker Compose 部署 LiteLLM Gateway、PostgreSQL 和 Cloudflare Tunnel。LiteLLM 镜像固定为稳定版 `v1.101.0`，避免滚动标签在重建容器时引入未经验证的升级。
 
-## 服务组成
+## 服务
 
-| 服务 | 镜像 | 说明 |
-|------|------|------|
-| `postgres` | `postgres:16-alpine` | LiteLLM 元数据存储数据库 |
-| `litellm` | `ghcr.io/berriai/litellm:main-latest` | LiteLLM 代理服务 |
-| `tunnel` | `cloudflare/cloudflared:latest` | Cloudflare Tunnel，对外暴露服务 |
+| 服务 | 镜像 | 用途 |
+| --- | --- | --- |
+| `litellm` | `ghcr.io/berriai/litellm:v1.101.0` | API Gateway 和 Admin UI |
+| `postgres` | `postgres:16-alpine` | 模型、虚拟密钥、用户和消费记录 |
+| `tunnel` | `cloudflare/cloudflared:latest` | 通过 Cloudflare Tunnel 对外提供访问 |
 
-## 前置要求
+LiteLLM 只在 Compose 内部网络暴露 `4000` 端口。Cloudflare Tunnel 的 Public Hostname 应指向 `http://litellm:4000`。
 
-- Docker & Docker Compose
-- Cloudflare Tunnel Token（在 Cloudflare Zero Trust 控制台创建）
+## 配置文件
 
-## 配置
+- `docker-compose.yaml`：服务、健康检查和持久化卷。
+- `litellm_config.yaml`：仓库安全的代理默认设置。模型列表为空，模型与供应商凭据通过 Admin UI 管理并存入 PostgreSQL。
+- `.env.example`：所需环境变量的模板；真实 `.env` 已被仓库根目录的 `.gitignore` 排除。
 
-在 `LiteLLM/` 目录下创建 `.env` 文件，填入以下环境变量：
+## 初始化密钥
 
-```env
-# PostgreSQL（POSTGRES_DB 和 POSTGRES_USER 默认为 litellm，可省略）
-POSTGRES_PASSWORD=your_strong_password
+复制环境变量模板：
 
-# LiteLLM 主密钥，用于 API 鉴权
-LITELLM_MASTER_KEY=sk-your-master-key
-
-# Cloudflare Tunnel Token
-TUNNEL_TOKEN=your_cloudflare_tunnel_token
-
-# 可选：自定义数据库连接串（默认自动拼接）
-# DATABASE_URL=postgresql://litellm:your_password@postgres:5432/litellm
+```bash
+cp .env.example .env
 ```
 
-> **注意**：`POSTGRES_PASSWORD` 和 `LITELLM_MASTER_KEY` 为必填项。
+生成三个互不相同的随机值：
 
+```bash
+echo "sk-$(openssl rand -hex 32)"  # LITELLM_MASTER_KEY
+openssl rand -hex 32               # LITELLM_SALT_KEY
+openssl rand -hex 32               # POSTGRES_PASSWORD
+```
 
+将生成值和 Cloudflare Tunnel Token 写入 `.env`。
+
+`LITELLM_MASTER_KEY` 是网关管理员凭据，必须以 `sk-` 开头。`LITELLM_SALT_KEY` 用于加密存入数据库的供应商密钥；添加模型后不要更换它，否则已有凭据将无法解密。这里生成的 PostgreSQL 密码仅包含十六进制字符，可以安全用于 `DATABASE_URL`。
 
 ## 启动
 
 ```bash
-cd LiteLLM
-
-# 启动所有服务（后台运行）
+docker compose config --quiet
 docker compose up -d
+docker compose ps
+```
 
-# 查看日志
-docker compose logs -f litellm
+第一次启动可能需要等待数据库初始化和 LiteLLM schema migration。`tunnel` 会等到 LiteLLM 的 `/health/liveliness` 检查通过后启动。
 
-# 停止服务
+查看状态和日志：
+
+```bash
+docker compose ps
+docker compose logs --tail=100 litellm
+docker inspect --format '{{json .State.Health}}' litellm
+```
+
+通过 Cloudflare 配置的域名访问 `/ui`，用户名为 `admin`，密码为 `LITELLM_MASTER_KEY`。在 **Models + Endpoints** 中添加模型和供应商凭据。
+
+## `litellm_config.yaml`
+
+默认配置如下：
+
+```yaml
+model_list: []
+
+litellm_settings:
+  drop_params: true
+```
+
+`STORE_MODEL_IN_DB=True` 已在 Compose 中启用，因此通过 Admin UI 添加的模型会保存在 PostgreSQL。若希望由 Git 管理静态模型，可以向 `model_list` 添加条目，并通过 `os.environ/VARIABLE_NAME` 引用 `.env` 中的供应商密钥；不要把真实密钥写入 YAML。
+
+## 升级
+
+升级时将 Compose 中的 LiteLLM 镜像改为经过确认的稳定版本，再执行：
+
+```bash
+docker compose pull
+docker compose up -d
+docker compose ps
+```
+
+升级前备份 PostgreSQL 数据。`LITELLM_SALT_KEY` 必须保持不变。
+
+## 停止或删除
+
+停止并删除容器和项目网络，同时保留 PostgreSQL 数据卷：
+
+```bash
 docker compose down
 ```
 
-## 访问
-
-- LiteLLM 默认监听容器内部端口 `4000`，通过 Cloudflare Tunnel 对外暴露，无需在宿主机映射端口。
-- 如需本地直接访问，可在 `litellm` 服务中添加端口映射：
-
-  ```yaml
-  ports:
-    - "4000:4000"
-  ```
-
-## 数据持久化
-
-PostgreSQL 数据存储在名为 `postgres_data` 的 Docker volume 中，`docker compose down` 不会删除该 volume。若需彻底清除数据：
+永久删除 PostgreSQL 数据卷：
 
 ```bash
-docker compose down -v
+docker compose down --volumes
 ```
+
+第二条命令会永久删除 LiteLLM 中的模型、虚拟密钥、用户和消费记录。
+
+## 官方参考
+
+- [Docker Quickstart](https://docs.litellm.ai/docs/proxy/docker_quick_start)
+- [Production Deployment](https://docs.litellm.ai/docs/proxy/deploy)
+- [Configuration reference](https://docs.litellm.ai/docs/proxy/configs)

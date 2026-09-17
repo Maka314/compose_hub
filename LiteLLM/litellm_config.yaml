@@ -1,0 +1,6 @@
+# Models and provider credentials are managed in the LiteLLM Admin UI and stored
+# in PostgreSQL. This file contains only repository-safe proxy defaults.
+model_list: []
+
+litellm_settings:
+  drop_params: true
