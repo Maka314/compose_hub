@@ -21,8 +21,9 @@ services:
     container_name: litellm
     restart: unless-stopped
     command: ["--config=/app/config.yaml"]
-    volumes:
-      - ./litellm_config.yaml:/app/config.yaml:ro
+    configs:
+      - source: litellm_config
+        target: /app/config.yaml
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-litellm}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-litellm}
       LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:?Set LITELLM_MASTER_KEY in .env}
@@ -53,3 +54,13 @@ services:
 
 volumes:
   postgres_data:
+
+configs:
+  litellm_config:
+    content: |
+      # Models and provider credentials are managed in the LiteLLM Admin UI and stored
+      # in PostgreSQL. This file contains only repository-safe proxy defaults.
+      model_list: []
+
+      litellm_settings:
+        drop_params: true
