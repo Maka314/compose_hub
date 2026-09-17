@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: litellm-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-litellm}
+      - POSTGRES_USER=${POSTGRES_USER:-litellm}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-litellm} -d ${POSTGRES_DB:-litellm}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    # image: ghcr.io/berriai/litellm:v1.83.6-nightly
+    container_name: litellm
+    restart: unless-stopped
+    volumes:
+      - ./litellm_config.yaml:/app/config.yaml:ro
+    environment:
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-litellm}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-litellm}}
+      - STORE_MODEL_IN_DB=True
+      - LITELLM_DROP_PARAMS=True
+    command: ["--config", "/app/config.yaml", "--detailed_debug"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    
+
+  # ----------------------------------------------
+  # Cloudflare Tunnel
+  # ----------------------------------------------
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
+    restart: always
+
+volumes:
+  postgres_data:
